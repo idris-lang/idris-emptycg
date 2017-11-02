@@ -4,7 +4,8 @@ import Idris.Core.TT
 import Idris.AbsSyntax
 import Idris.ElabDecls
 import Idris.REPL
-
+import Idris.Main
+import Idris.Options
 import IRTS.Compiler
 import IRTS.CodegenEmpty
 
@@ -16,7 +17,7 @@ import Paths_idris_emptycg
 data Opts = Opts { inputs :: [FilePath],
                    output :: FilePath }
 
-showUsage = do putStrLn "Usage: idris-emptycg <ibc-files> [-o <output-file>]"
+showUsage = do putStrLn "Usage: idris-codegen-emptycg <ibc-files> [-o <output-file>]"
                exitWith ExitSuccess
 
 getOpts :: IO Opts
@@ -31,13 +32,11 @@ cg_main :: Opts -> Idris ()
 cg_main opts = do elabPrims
                   loadInputs (inputs opts) Nothing
                   mainProg <- elabMain
-                  ir <- compile (Via "emptycg") (output opts) mainProg
+                  ir <- compile (Via IBCFormat "emptycg") (output opts) (Just mainProg)
                   runIO $ codegenEmpty ir
 
 main :: IO ()
 main = do opts <- getOpts
-          if (null (inputs opts)) 
+          if (null (inputs opts))
              then showUsage
              else runMain (cg_main opts)
-
-
